@@ -2,6 +2,7 @@ import {Component, OnInit} from '@angular/core';
 import {Analytics} from './shared/analytics/analytics';
 
 import '../style/app.scss';
+import '../style/custom-tooltip.scss';
 
 @Component({
   selector: 'ngbd-app',

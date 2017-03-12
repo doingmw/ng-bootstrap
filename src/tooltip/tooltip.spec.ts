@@ -32,6 +32,14 @@ describe('ngb-tooltip-window', () => {
     fixture.detectChanges();
     expect(fixture.nativeElement).toHaveCssClass('tooltip-left');
   });
+
+  it('should have custom classes assigned', () => {
+    const fixture = TestBed.createComponent(NgbTooltipWindow);
+    fixture.componentInstance.customCssClasses = ['custom-class1', 'custom-class2'];
+    fixture.detectChanges();
+    expect(fixture.nativeElement).toHaveCssClass('custom-class1');
+    expect(fixture.nativeElement).toHaveCssClass('custom-class2');
+  });
 });
 
 describe('ngb-tooltip', () => {
@@ -425,6 +433,7 @@ describe('ngb-tooltip', () => {
       config.placement = 'bottom';
       config.triggers = 'click';
       config.container = 'body';
+      config.customCssClasses = ['custom-class'];
     }));
 
     it('should initialize inputs with provided config', () => {
@@ -435,6 +444,7 @@ describe('ngb-tooltip', () => {
       expect(tooltip.placement).toBe(config.placement);
       expect(tooltip.triggers).toBe(config.triggers);
       expect(tooltip.container).toBe(config.container);
+      expect(tooltip.customCssClasses.toString()).toBe(config.customCssClasses.toString());
     });
   });
 
@@ -443,6 +453,7 @@ describe('ngb-tooltip', () => {
     config.placement = 'bottom';
     config.triggers = 'click';
     config.container = 'body';
+    config.customCssClasses = ['custom-class'];
 
     beforeEach(() => {
       TestBed.configureTestingModule(
@@ -456,6 +467,7 @@ describe('ngb-tooltip', () => {
       expect(tooltip.placement).toBe(config.placement);
       expect(tooltip.triggers).toBe(config.triggers);
       expect(tooltip.container).toBe(config.container);
+      expect(tooltip.customCssClasses.toString()).toBe(config.customCssClasses.toString());
     });
   });
 });

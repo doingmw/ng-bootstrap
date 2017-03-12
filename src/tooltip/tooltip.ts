@@ -25,13 +25,19 @@ import {NgbTooltipConfig} from './tooltip-config';
 @Component({
   selector: 'ngb-tooltip-window',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: {'[class]': '"tooltip show tooltip-" + placement', 'role': 'tooltip'},
+  host: {'[class]': 'hostClasses', 'role': 'tooltip'},
   template: `
     <div class="tooltip-inner"><ng-content></ng-content></div>
     `
 })
 export class NgbTooltipWindow {
   @Input() placement: 'top' | 'bottom' | 'left' | 'right' = 'top';
+  @Input() customCssClasses: string[] = [];
+
+  get hostClasses(): string {
+    return `tooltip show tooltip-${this.placement} ${this.customCssClasses.map(
+        (cssClass: string) => cssClass).join(' ')}`;
+  }
 }
 
 /**
@@ -53,8 +59,12 @@ export class NgbTooltip implements OnInit, OnDestroy {
    */
   @Input() container: string;
   /**
- * Emits an event when the tooltip is shown
- */
+   * Specifies an array of custom css classes to be applied to the tooltip
+   */
+  @Input() customCssClasses: string[] = [];
+  /**
+   * Emits an event when the tooltip is shown
+   */
   @Output() shown = new EventEmitter();
   /**
    * Emits an event when the tooltip is hidden
@@ -74,6 +84,7 @@ export class NgbTooltip implements OnInit, OnDestroy {
     this.placement = config.placement;
     this.triggers = config.triggers;
     this.container = config.container;
+    this.customCssClasses.push(...config.customCssClasses);
     this._popupService = new PopupService<NgbTooltipWindow>(
         NgbTooltipWindow, injector, viewContainerRef, _renderer, componentFactoryResolver);
 
@@ -107,6 +118,7 @@ export class NgbTooltip implements OnInit, OnDestroy {
     if (!this._windowRef && this._ngbTooltip) {
       this._windowRef = this._popupService.open(this._ngbTooltip, context);
       this._windowRef.instance.placement = this.placement;
+      this._windowRef.instance.customCssClasses.push(...this.customCssClasses);
 
       if (this.container === 'body') {
         window.document.querySelector(this.container).appendChild(this._windowRef.location.nativeElement);
