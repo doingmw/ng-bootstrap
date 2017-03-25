@@ -8,6 +8,7 @@ import {DEMO_SNIPPETS} from './demos';
       <ngbd-api-docs directive="NgbCarousel"></ngbd-api-docs>
       <ngbd-api-docs directive="NgbSlide"></ngbd-api-docs>
       <ngbd-api-docs-config type="NgbCarouselConfig"></ngbd-api-docs-config>
+      <ngbd-api-docs-class type="NgbSlideCarouselEvent"></ngbd-api-docs-class>
       <ngbd-example-box demoTitle="Carousel" [snippets]="snippets" component="carousel" demo="basic">
         <ngbd-carousel-basic></ngbd-carousel-basic>
       </ngbd-example-box>

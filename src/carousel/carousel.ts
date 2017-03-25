@@ -7,7 +7,9 @@ import {
   Input,
   OnDestroy,
   AfterContentChecked,
-  OnInit
+  OnInit,
+  Output,
+  EventEmitter
 } from '@angular/core';
 import {NgbCarouselConfig} from './carousel-config';
 
@@ -43,7 +45,7 @@ export class NgbSlide {
   },
   template: `
     <ol class="carousel-indicators">
-      <li *ngFor="let slide of slides" [id]="slide.id" [class.active]="slide.id === activeId" (click)="cycleToSelected(slide.id)"></li>
+      <li *ngFor="let slide of slides" [id]="slide.id" [class.active]="slide.id === activeId" (click)="select(slide.id)"></li>
     </ol>
     <div class="carousel-inner" role="listbox">
       <div *ngFor="let slide of slides" class="carousel-item" [class.active]="slide.id === activeId">
@@ -84,6 +86,12 @@ export class NgbCarousel implements AfterContentChecked,
    * The active slide id.
    */
   @Input() activeId: string;
+
+  /**
+   * A carousel slide event fired when the slide transition is completed.
+   * See NgbSlideCarouselEvent for payload details
+   */
+  @Output() onCarouselSlide = new EventEmitter<NgbSlideCarouselEvent>();
 
   constructor(config: NgbCarouselConfig) {
     this.interval = config.interval;
@@ -141,6 +149,14 @@ export class NgbCarousel implements AfterContentChecked,
   cycleToSelected(slideIdx: string) {
     let selectedSlide = this._getSlideById(slideIdx);
     if (selectedSlide) {
+      if (selectedSlide.id !== this.activeId) {
+        this.onCarouselSlide.emit({
+          type: 'slide',
+          prev: this.activeId,
+          current: selectedSlide.id,
+          direction: this._getSlideEventDirection(this.activeId, selectedSlide.id)
+        });
+      }
       this.activeId = selectedSlide.id;
     }
   }
@@ -196,6 +212,48 @@ export class NgbCarousel implements AfterContentChecked,
     return isFirstSlide ? (this.wrap ? slideArr[slideArr.length - 1].id : slideArr[0].id) :
                           slideArr[currentSlideIdx - 1].id;
   }
+
+  private _getSlideEventDirection(currentActiveSlideId: string, nextActiveSlideId: string):
+      NgbSlideCarouselEventDirection {
+    const currentActiveSlideIdx = this._getSlideIdxById(currentActiveSlideId);
+    const nextActiveSlideIdx = this._getSlideIdxById(nextActiveSlideId);
+
+    return currentActiveSlideIdx > nextActiveSlideIdx ? NgbSlideCarouselEventDirection.RIGHT :
+                                                        NgbSlideCarouselEventDirection.LEFT;
+  }
+}
+
+/**
+* The payload of the slide event fired when the slide transition is completed
+*/
+export interface NgbSlideCarouselEvent {
+  /**
+   * Event type
+   */
+  type: 'slide';
+
+  /**
+   * Previous slide id
+   */
+  prev: string;
+
+  /**
+   * New slide ids
+   */
+  current: string;
+
+  /**
+   * Slide event direction
+   */
+  direction: NgbSlideCarouselEventDirection;
+}
+
+/**
+ * Enum to define the carousel slide event direction
+ */
+export enum NgbSlideCarouselEventDirection {
+  LEFT = <any>'left',
+  RIGHT = <any>'right'
 }
 
 export const NGB_CAROUSEL_DIRECTIVES = [NgbCarousel, NgbSlide];
