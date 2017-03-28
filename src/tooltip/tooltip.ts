@@ -16,23 +16,25 @@ import {
   ComponentFactoryResolver,
   NgZone
 } from '@angular/core';
-
 import {listenToTriggers} from '../util/triggers';
 import {positionElements} from '../util/positioning';
 import {PopupService} from '../util/popup';
 import {NgbTooltipConfig} from './tooltip-config';
 
+let nextId = 0;
+
 @Component({
   selector: 'ngb-tooltip-window',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: {'[class]': 'hostClasses', 'role': 'tooltip'},
+  host: {'[class]': 'hostClasses', 'role': 'tooltip', '[id]': 'id'},
   template: `
     <div class="tooltip-inner"><ng-content></ng-content></div>
     `
 })
 export class NgbTooltipWindow {
-  @Input() placement: 'top' | 'bottom' | 'left' | 'right' = 'top';
   @Input() customCssClasses: string[] = [];
+  @Input() id: string;
+  @Input() placement: 'top' | 'bottom' | 'left' | 'right' = 'top';
 
   get hostClasses(): string {
     return `tooltip show tooltip-${this.placement} ${this.customCssClasses.map(
@@ -72,6 +74,7 @@ export class NgbTooltip implements OnInit, OnDestroy {
   @Output() hidden = new EventEmitter();
 
   private _ngbTooltip: string | TemplateRef<any>;
+  private _ngbTooltipWindowId = `ngb-tooltip-${nextId++}`;
   private _popupService: PopupService<NgbTooltipWindow>;
   private _windowRef: ComponentRef<NgbTooltipWindow>;
   private _unregisterListenersFn;
@@ -119,6 +122,9 @@ export class NgbTooltip implements OnInit, OnDestroy {
       this._windowRef = this._popupService.open(this._ngbTooltip, context);
       this._windowRef.instance.placement = this.placement;
       this._windowRef.instance.customCssClasses.push(...this.customCssClasses);
+      this._windowRef.instance.id = this._ngbTooltipWindowId;
+
+      this._renderer.setElementAttribute(this._elementRef.nativeElement, 'aria-describedby', this._ngbTooltipWindowId);
 
       if (this.container === 'body') {
         window.document.querySelector(this.container).appendChild(this._windowRef.location.nativeElement);
@@ -136,6 +142,7 @@ export class NgbTooltip implements OnInit, OnDestroy {
    */
   close(): void {
     if (this._windowRef != null) {
+      this._renderer.setElementAttribute(this._elementRef.nativeElement, 'aria-describedby', null);
       this._popupService.close();
       this._windowRef = null;
       this.hidden.emit();

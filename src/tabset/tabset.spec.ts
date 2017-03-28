@@ -10,10 +10,6 @@ import {NgbTabset} from './tabset';
 const createTestComponent = (html: string) =>
     createGenericTestComponent(html, TestComponent) as ComponentFixture<TestComponent>;
 
-function getTabset(nativeEl: HTMLElement) {
-  return nativeEl.querySelector('ngb-tabset');
-}
-
 function getTabTitles(nativeEl: HTMLElement) {
   return nativeEl.querySelectorAll('.nav-link');
 }
@@ -93,11 +89,9 @@ describe('ngb-tabset', () => {
     `);
 
     const compiled: HTMLElement = fixture.nativeElement;
-    const tabset = getTabset(compiled);
     const tabTitles = getTabTitles(compiled);
     const tabContent = getTabContent(compiled);
 
-    expect(tabset.getAttribute('role')).toBe('tabpanel');
     expect(tabTitles[0].getAttribute('role')).toBe('tab');
     expect(tabTitles[0].getAttribute('aria-expanded')).toBe('true');
     expect(tabTitles[1].getAttribute('aria-expanded')).toBe('false');
@@ -325,6 +319,24 @@ describe('ngb-tabset', () => {
     expectTabs(fixture.nativeElement, [true, false], [false, true]);
   });
 
+  it('should not remove inactive tabs content from DOM with `destroyOnHide` flag', () => {
+    const fixture = createTestComponent(`
+          <ngb-tabset #myTabSet="ngbTabset" [destroyOnHide]="false">
+            <ngb-tab id="myFirstTab" title="foo"><template ngbTabContent>Foo</template></ngb-tab>
+            <ngb-tab id="mySecondTab" title="bar"><template ngbTabContent>Bar</template></ngb-tab>
+          </ngb-tabset>
+          <button (click)="myTabSet.select('mySecondTab')">Select the second Tab</button>
+        `);
+
+    const button = getButton(fixture.nativeElement);
+
+    // Click on a button to select the second tab
+    (<HTMLElement>button[0]).click();
+    fixture.detectChanges();
+    let tabContents = getTabContent(fixture.nativeElement);
+    expect(tabContents.length).toBe(2);
+    expect(tabContents[1]).toHaveCssClass('active');
+  });
 
   it('should emit tab change event when switching tabs', () => {
     const fixture = createTestComponent(`
